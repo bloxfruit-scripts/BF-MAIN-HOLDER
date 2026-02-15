@@ -1,658 +1,1045 @@
--- DRIX Verification GUI (Premium Edition - NO COOLDOWN DISPLAY)
+--[[
+    DRIX SCRIPT HUB - PREMIUM VERIFICATION SYSTEM
+    Author: DRIX
+    Version: 2.1 - FIXED PLACEHOLDER
+]]
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local PlayerGui = player:WaitForChild("PlayerGui")
 
--- ==========================================
--- GAME CHECK FUNCTIONS
--- ==========================================
+-- Configuration
+local CORRECT_KEY = "DRIX_KEY123"
+local KEY_LINK = "https://beacons.ai/roblox_tools"
+local SCRIPT_URL = "https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"
 
--- Check if current game is Blox Fruit
-local function isBloxFruitGame()
-    local placeId = game.PlaceId
-    local bloxFruitPlaceIds = {
-        -- Main game places
-        [2753915549] = true, -- 1st Sea
-        [4442272183] = true, -- 2nd Sea
-        [7449423635] = true, -- 3rd Sea
-        [3741319573] = true, -- Private Server? (Testing)
-        [6299805723] = true, -- Update 17
-        [6403373529] = true, -- Update 17.3
-        [8579829132] = true, -- Update 20
-    }
-    return bloxFruitPlaceIds[placeId] or false
-end
-
--- Check which sea the player is in
-local function getCurrentSea()
-    local placeId = game.PlaceId
-    if placeId == 2753915549 then
-        return 1
-    elseif placeId == 4442272183 then
-        return 2
-    elseif placeId == 7449423635 or placeId == 3741319573 or placeId == 6299805723 or placeId == 6403373529 or placeId == 8579829132 then
-        return 3
-    else
-        return 0 -- Unknown/Other
-    end
-end
-
--- Check if player is in a private server
-local function isPrivateServer()
-    -- Check if the game instance is a private server
-    local privateServerId = game.PrivateServerId
-    local vipServerId = game.VIPServerId
-    return privateServerId ~= nil and privateServerId ~= "" or vipServerId ~= nil and vipServerId ~= ""
-end
-
--- ==========================================
--- PREMIUM VALIDATION CHECKS (RUN IMMEDIATELY)
--- ==========================================
-
--- Create temporary GUI for error messages
-local errorGui = Instance.new("ScreenGui", playerGui)
-errorGui.Name = "DrixErrorScreen"
-errorGui.ResetOnSpawn = false
-errorGui.IgnoreGuiInset = true
-errorGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-errorGui.DisplayOrder = 1000
-
--- CHECK 1: Private Server Restriction
-if isPrivateServer() then
-    local privateErrorFrame = Instance.new("Frame", errorGui)
-    privateErrorFrame.Size = UDim2.new(0, 600, 0, 250)
-    privateErrorFrame.Position = UDim2.new(0.5, -300, 0.5, -125)
-    privateErrorFrame.BackgroundColor3 = Color3.fromRGB(198, 40, 40)
-    privateErrorFrame.BackgroundTransparency = 0
-    privateErrorFrame.BorderSizePixel = 0
-    
-    local privateErrorCorner = Instance.new("UICorner", privateErrorFrame)
-    privateErrorCorner.CornerRadius = UDim.new(0, 20)
-    
-    local privateErrorText = Instance.new("TextLabel", privateErrorFrame)
-    privateErrorText.Size = UDim2.new(1, -80, 1, -80)
-    privateErrorText.Position = UDim2.new(0, 40, 0, 40)
-    privateErrorText.BackgroundTransparency = 1
-    privateErrorText.Text = "❌ PRIVATE SERVER DETECTED ❌\n\nTHIS SCRIPT DOESN'T WORK IN PRIVATE SERVERS!\n\nPlease join a public server to use DRIX Script Hub."
-    privateErrorText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    privateErrorText.TextWrapped = true
-    privateErrorText.TextScaled = true
-    privateErrorText.Font = Enum.Font.GothamBold
-    privateErrorText.TextStrokeTransparency = 0.2
-    privateErrorText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    privateErrorText.TextXAlignment = Enum.TextXAlignment.Center
-    
-    wait(5)
-    player:Kick("❌ PRIVATE SERVER DETECTED - THIS SCRIPT DOESN'T WORK IN PRIVATE SERVERS! Please join a public server to use DRIX Script Hub.")
-    return
-end
-
--- CHECK 2: Blox Fruit Game Restriction
-if not isBloxFruitGame() then
-    local gameErrorFrame = Instance.new("Frame", errorGui)
-    gameErrorFrame.Size = UDim2.new(0, 600, 0, 250)
-    gameErrorFrame.Position = UDim2.new(0.5, -300, 0.5, -125)
-    gameErrorFrame.BackgroundColor3 = Color3.fromRGB(198, 40, 40)
-    gameErrorFrame.BackgroundTransparency = 0
-    gameErrorFrame.BorderSizePixel = 0
-    
-    local gameErrorCorner = Instance.new("UICorner", gameErrorFrame)
-    gameErrorCorner.CornerRadius = UDim.new(0, 20)
-    
-    local gameErrorText = Instance.new("TextLabel", gameErrorFrame)
-    gameErrorText.Size = UDim2.new(1, -80, 1, -80)
-    gameErrorText.Position = UDim2.new(0, 40, 0, 40)
-    gameErrorText.BackgroundTransparency = 1
-    gameErrorText.Text = "❌ UNSUPPORTED GAME ❌\n\nTHIS SCRIPT IS MADE FOR BLOX FRUIT ONLY!\n\nPlease join Blox Fruit to use DRIX Script Hub."
-    gameErrorText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    gameErrorText.TextWrapped = true
-    gameErrorText.TextScaled = true
-    gameErrorText.Font = Enum.Font.GothamBold
-    gameErrorText.TextStrokeTransparency = 0.2
-    gameErrorText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    gameErrorText.TextXAlignment = Enum.TextXAlignment.Center
-    
-    wait(5)
-    player:Kick("❌ UNSUPPORTED GAME - THIS SCRIPT IS MADE FOR BLOX FRUIT ONLY! Please join Blox Fruit to use DRIX Script Hub.")
-    return
-end
-
--- CHECK 3: Sea 1 Restriction
-if getCurrentSea() == 1 then
-    local seaErrorFrame = Instance.new("Frame", errorGui)
-    seaErrorFrame.Size = UDim2.new(0, 600, 0, 250)
-    seaErrorFrame.Position = UDim2.new(0.5, -300, 0.5, -125)
-    seaErrorFrame.BackgroundColor3 = Color3.fromRGB(198, 40, 40)
-    seaErrorFrame.BackgroundTransparency = 0
-    seaErrorFrame.BorderSizePixel = 0
-    
-    local seaErrorCorner = Instance.new("UICorner", seaErrorFrame)
-    seaErrorCorner.CornerRadius = UDim.new(0, 20)
-    
-    local seaErrorText = Instance.new("TextLabel", seaErrorFrame)
-    seaErrorText.Size = UDim2.new(1, -80, 1, -80)
-    seaErrorText.Position = UDim2.new(0, 40, 0, 40)
-    seaErrorText.BackgroundTransparency = 1
-    seaErrorText.Text = "❌ FIRST SEA NOT SUPPORTED ❌\n\nTHIS SCRIPT ONLY SUPPORTS 2ND AND 3RD SEA!\n\nPlease reach 2nd or 3rd Sea to use DRIX Script Hub."
-    seaErrorText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    seaErrorText.TextWrapped = true
-    seaErrorText.TextScaled = true
-    seaErrorText.Font = Enum.Font.GothamBold
-    seaErrorText.TextStrokeTransparency = 0.2
-    seaErrorText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    seaErrorText.TextXAlignment = Enum.TextXAlignment.Center
-    
-    wait(5)
-    player:Kick("❌ FIRST SEA NOT SUPPORTED - THIS SCRIPT ONLY SUPPORTS 2ND AND 3RD SEA! Please reach 2nd or 3rd Sea to use DRIX Script Hub.")
-    return
-end
-
--- Clear error GUI if all checks pass
-errorGui:Destroy()
-
--- ==========================================
--- PREMIUM COLOR SCHEME - Royal Crimson (NO TRANSPARENCY)
--- ==========================================
+-- Premium Color Scheme
 local COLORS = {
-    Primary = Color3.fromRGB(198, 40, 40),      -- Deep Crimson Red
-    Secondary = Color3.fromRGB(18, 18, 18),      -- Rich Black (darker)
-    Accent = Color3.fromRGB(255, 215, 0),        -- Gold
-    Success = Color3.fromRGB(46, 125, 50),       -- Dark Emerald
-    Warning = Color3.fromRGB(255, 160, 0),       -- Dark Amber
+    Primary = Color3.fromRGB(198, 40, 40),      -- Royal Crimson
+    PrimaryDark = Color3.fromRGB(150, 30, 30),   -- Dark Crimson
+    Secondary = Color3.fromRGB(10, 10, 10),      -- Obsidian Black
+    SecondaryLight = Color3.fromRGB(30, 30, 30), -- Light Obsidian
+    Accent = Color3.fromRGB(255, 215, 0),        -- Royal Gold
+    AccentLight = Color3.fromRGB(255, 235, 100), -- Light Gold
+    Success = Color3.fromRGB(46, 125, 50),       -- Emerald
+    Warning = Color3.fromRGB(255, 160, 0),       -- Amber
     Text = Color3.fromRGB(255, 255, 255),        -- Pure White
-    TextShadow = Color3.fromRGB(0, 0, 0)         -- Black
+    TextMuted = Color3.fromRGB(200, 200, 200),   -- Muted White
+    DarkRed = Color3.fromRGB(180, 0, 0)          -- Blood Red
 }
 
--- Animation function
-local function animateClose(gui)
-    if not gui or not gui.Parent then return end
-    
-    local tweenInfo = TweenInfo.new(
-        0.5,
-        Enum.EasingStyle.Quad,
-        Enum.EasingDirection.Out
-    )
-    
-    local goals = {
-        BackgroundTransparency = 1,
-        Size = UDim2.new(0, 0, 0, 0),
-        Position = UDim2.new(0.5, 0, 0.5, 0)
-    }
-    
-    local tween = TweenService:Create(gui, tweenInfo, goals)
-    tween:Play()
-    tween.Completed:Wait()
-    gui:Destroy()
-end
+-- Blox Fruit Place IDs
+local BLOX_FRUIT_PLACES = {
+    [2753915549] = "Sea 1",
+    [4442272183] = "Sea 2", 
+    [7449423635] = "Sea 3",
+    [3741319573] = "Other",
+    [6299805723] = "Other",
+    [6403373529] = "Other",
+    [8579829132] = "Other"
+}
 
--- Clear existing GUI
-if playerGui:FindFirstChild("DrixVerification") then
-    playerGui.DrixVerification:Destroy()
-end
-
--- ==========================================
--- MAIN VERIFICATION GUI
--- ==========================================
-
-local gui1 = Instance.new("ScreenGui", playerGui)
-gui1.Name = "DrixVerification"
-gui1.ResetOnSpawn = false
-gui1.IgnoreGuiInset = true
-gui1.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui1.DisplayOrder = 999
-
-local frame1 = Instance.new("Frame", gui1)
-frame1.Size = UDim2.new(0, 600, 0, 350)
-frame1.Position = UDim2.new(0.5, -300, 0.5, -175)
-frame1.BackgroundColor3 = COLORS.Primary
-frame1.BackgroundTransparency = 0
-frame1.BorderSizePixel = 0
-frame1.Active = true
-frame1.Draggable = true
-
--- Premium shadow effect
-local shadow = Instance.new("ImageLabel", frame1)
-shadow.Name = "Shadow"
-shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-shadow.BackgroundTransparency = 1
-shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-shadow.Size = UDim2.new(1, 30, 1, 30)
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageColor3 = Color3.new(0, 0, 0)
-shadow.ImageTransparency = 0.4
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-shadow.ZIndex = -1
-shadow.Parent = frame1
-
-local corner1 = Instance.new("UICorner", frame1)
-corner1.CornerRadius = UDim.new(0, 20)
-
--- Premium gradient
-local gradient1 = Instance.new("UIGradient", frame1)
-gradient1.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, COLORS.Primary),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 20, 20))
-})
-gradient1.Rotation = 45
-
--- TITLE
-local title1 = Instance.new("TextLabel", frame1)
-title1.Size = UDim2.new(1, 0, 0, 80)
-title1.Position = UDim2.new(0, 0, 0, 20)
-title1.Text = "⚡ DRIX VERIFICATION ⚡"
-title1.TextScaled = false
-title1.TextSize = 42
-title1.BackgroundTransparency = 1
-title1.TextColor3 = COLORS.Text
-title1.Font = Enum.Font.GothamBold
-title1.TextStrokeTransparency = 0.2
-title1.TextStrokeColor3 = COLORS.TextShadow
-
--- BODY
-local body1 = Instance.new("TextLabel", frame1)
-body1.Size = UDim2.new(1, -80, 0, 140)
-body1.Position = UDim2.new(0, 40, 0, 110)
-body1.TextWrapped = true
-body1.Text = "We need to bypass the current server and account restrictions to ensure the script operates at its full potential."
-body1.BackgroundTransparency = 1
-body1.TextColor3 = COLORS.Text
-body1.Font = Enum.Font.Gotham
-body1.TextSize = 22
-body1.TextScaled = false
-body1.TextStrokeTransparency = 0.3
-body1.TextStrokeColor3 = COLORS.TextShadow
-body1.TextXAlignment = Enum.TextXAlignment.Center
-
--- DECORATIVE LINE
-local line1 = Instance.new("Frame", frame1)
-line1.Size = UDim2.new(0.8, 0, 0, 3)
-line1.Position = UDim2.new(0.1, 0, 0.65, 0)
-line1.BackgroundColor3 = COLORS.Accent
-line1.BorderSizePixel = 0
-local lineCorner1 = Instance.new("UICorner", line1)
-lineCorner1.CornerRadius = UDim.new(0, 3)
-
--- BUTTON
-local button = Instance.new("TextButton", frame1)
-button.Size = UDim2.new(0, 280, 0, 70)
-button.Position = UDim2.new(1, -300, 1, -90)
-button.Text = "⚡ OK! BYPASS THE SERVER ⚡"
-button.BackgroundColor3 = COLORS.Secondary
-button.BackgroundTransparency = 0
-button.TextColor3 = COLORS.Text
-button.TextScaled = false
-button.TextSize = 24
-button.Font = Enum.Font.GothamBold
-button.AutoButtonColor = true
-
-local cornerBtn = Instance.new("UICorner", button)
-cornerBtn.CornerRadius = UDim.new(0, 40)
-
--- Button gradient
-local btnGradient = Instance.new("UIGradient", button)
-btnGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, COLORS.Secondary),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30))
-})
-btnGradient.Rotation = 90
-
--- Button hover effect
-button.MouseEnter:Connect(function()
-    TweenService:Create(button, TweenInfo.new(0.3), {
-        BackgroundColor3 = COLORS.Accent,
-        TextColor3 = COLORS.Secondary
-    }):Play()
-    TweenService:Create(btnGradient, TweenInfo.new(0.3), {
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, COLORS.Accent),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 160, 0))
-        })
-    }):Play()
-end)
-
-button.MouseLeave:Connect(function()
-    TweenService:Create(button, TweenInfo.new(0.3), {
-        BackgroundColor3 = COLORS.Secondary,
-        TextColor3 = COLORS.Text
-    }):Play()
-    TweenService:Create(btnGradient, TweenInfo.new(0.3), {
-        Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, COLORS.Secondary),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30))
-        })
-    }):Play()
-end)
-
--- Button Click
-button.MouseButton1Click:Connect(function()
-    button.Active = false
-    button.Text = "🔄 BYPASSING..."
-    
-    -- Animate closing first GUI
-    animateClose(frame1)
-    task.wait(0.1)
-    gui1:Destroy()
-    
-    -- ==========================================
-    -- Second GUI (Premium Obsidian Black)
-    -- ==========================================
-    local gui2 = Instance.new("ScreenGui", playerGui)
-    gui2.Name = "RememberGui"
-    gui2.ResetOnSpawn = false
-    gui2.IgnoreGuiInset = true
-    gui2.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    gui2.DisplayOrder = 999
-    
-    local frame2 = Instance.new("Frame", gui2)
-    frame2.Size = UDim2.new(0, 600, 0, 380)
-    frame2.Position = UDim2.new(0.5, -300, 0.5, -190)
-    frame2.BackgroundColor3 = COLORS.Secondary
-    frame2.BackgroundTransparency = 0
-    frame2.BorderSizePixel = 0
-    frame2.Active = true
-    frame2.Draggable = true
-    
-    local shadow2 = Instance.new("ImageLabel", frame2)
-    shadow2.Name = "Shadow"
-    shadow2.AnchorPoint = Vector2.new(0.5, 0.5)
-    shadow2.BackgroundTransparency = 1
-    shadow2.Position = UDim2.new(0.5, 0, 0.5, 0)
-    shadow2.Size = UDim2.new(1, 30, 1, 30)
-    shadow2.Image = "rbxassetid://1316045217"
-    shadow2.ImageColor3 = Color3.new(0, 0, 0)
-    shadow2.ImageTransparency = 0.5
-    shadow2.ScaleType = Enum.ScaleType.Slice
-    shadow2.SliceCenter = Rect.new(10, 10, 118, 118)
-    shadow2.ZIndex = -1
-    shadow2.Parent = frame2
-    
-    local corner2 = Instance.new("UICorner", frame2)
-    corner2.CornerRadius = UDim.new(0, 20)
-    
-    local gradient2 = Instance.new("UIGradient", frame2)
-    gradient2.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, COLORS.Secondary),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 8))
-    })
-    gradient2.Rotation = 45
-    
-    local title2 = Instance.new("TextLabel", frame2)
-    title2.Size = UDim2.new(1, 0, 0, 80)
-    title2.Position = UDim2.new(0, 0, 0, 20)
-    title2.Text = "⚠️ THINGS TO REMEMBER! ⚠️"
-    title2.TextScaled = false
-    title2.TextSize = 40
-    title2.BackgroundTransparency = 1
-    title2.TextColor3 = COLORS.Text
-    title2.Font = Enum.Font.GothamBold
-    title2.TextStrokeTransparency = 0.2
-    title2.TextStrokeColor3 = COLORS.TextShadow
-    
-    local body2 = Instance.new("TextLabel", frame2)
-    body2.Size = UDim2.new(1, -80, 0, 160)
-    body2.Position = UDim2.new(0, 40, 0, 110)
-    body2.TextWrapped = true
-    body2.Text = "A loading interface will be displayed. Please remain patient.\nEstimated time: 10–15 SECONDS"
-    body2.BackgroundTransparency = 1
-    body2.TextColor3 = COLORS.Text
-    body2.Font = Enum.Font.Gotham
-    body2.TextSize = 26
-    body2.TextScaled = false
-    body2.TextStrokeTransparency = 0.3
-    body2.TextStrokeColor3 = COLORS.TextShadow
-    body2.TextXAlignment = Enum.TextXAlignment.Center
-    
-    local line2 = Instance.new("Frame", frame2)
-    line2.Size = UDim2.new(0.8, 0, 0, 4)
-    line2.Position = UDim2.new(0.1, 0, 0.7, 0)
-    line2.BackgroundColor3 = COLORS.Accent
-    line2.BorderSizePixel = 0
-    local lineCorner2 = Instance.new("UICorner", line2)
-    lineCorner2.CornerRadius = UDim.new(0, 4)
-    
-    local spinner = Instance.new("TextLabel", frame2)
-    spinner.Size = UDim2.new(0, 60, 0, 60)
-    spinner.Position = UDim2.new(0.5, -30, 0.85, 0)
-    spinner.BackgroundTransparency = 1
-    spinner.Text = "🔄"
-    spinner.TextColor3 = COLORS.Accent
-    spinner.TextScaled = true
-    spinner.Font = Enum.Font.GothamBold
-    spinner.TextStrokeTransparency = 0.3
-    
-    local statusText = Instance.new("TextLabel", frame2)
-    statusText.Size = UDim2.new(1, 0, 0, 50)
-    statusText.Position = UDim2.new(0, 0, 1, -70)
-    statusText.BackgroundTransparency = 1
-    statusText.Text = "PREPARING SCRIPT EXECUTION..."
-    statusText.TextColor3 = COLORS.Accent
-    statusText.TextScaled = false
-    statusText.TextSize = 24
-    statusText.Font = Enum.Font.GothamBold
-    statusText.TextStrokeTransparency = 0.3
-    statusText.TextStrokeColor3 = COLORS.TextShadow
-    
-    -- WAIT 15 SECONDS
-    statusText.Text = "LOADING SCRIPT... (15s)"
-    task.wait(5)
-    statusText.Text = "BYPASSING SERVER..."
-    task.wait(5)
-    statusText.Text = "FINALIZING..."
-    task.wait(5)
-    
-    -- Execute the loadstring
-    statusText.Text = "📜 EXECUTING SCRIPT..."
-    statusText.TextColor3 = COLORS.Success
-    
-    local success, err = pcall(function()
-        loadstring(game:HttpGet("https://pastefy.app/X1HkBT8B/raw"))()
+-- Function to copy text to clipboard
+local function copyToClipboard(text)
+    local success, error = pcall(function()
+        if setclipboard then
+            setclipboard(text)
+            return true
+        elseif toclipboard then
+            toclipboard(text)
+            return true
+        elseif Clipboard and Clipboard.set then
+            Clipboard.set(text)
+            return true
+        else
+            local gui = Instance.new("ScreenGui")
+            gui.Parent = player.PlayerGui
+            gui.Enabled = false
+            
+            local textBox = Instance.new("TextBox")
+            textBox.Parent = gui
+            textBox.Text = text
+            textBox:CaptureFocus()
+            textBox:SelectAll()
+            textBox:Copy()
+            
+            gui:Destroy()
+            return true
+        end
     end)
     
-    if success then
-        statusText.Text = "✅ SCRIPT LOADED SUCCESSFULLY!"
-        statusText.TextColor3 = COLORS.Success
-        spinner.Text = "✅"
-    else
-        statusText.Text = "⚠️ SCRIPT LOADED WITH WARNINGS"
-        statusText.TextColor3 = COLORS.Warning
-        spinner.Text = "⚠️"
-        warn("DRIX: Script loaded with issues - " .. tostring(err))
-    end
-    
-    task.wait(2)
-    
-    -- Animate close second GUI
-    animateClose(frame2)
-    task.wait(0.1)
-    gui2:Destroy()
-    
-    -- ==========================================
-    -- NEW: Corner Alert Popup (8 seconds)
-    -- ==========================================
-    local cornerAlertGui = Instance.new("ScreenGui", playerGui)
-    cornerAlertGui.Name = "DrixCornerAlert"
-    cornerAlertGui.ResetOnSpawn = false
-    cornerAlertGui.IgnoreGuiInset = true
-    cornerAlertGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    cornerAlertGui.DisplayOrder = 1000
-    
-    -- Positioned at bottom right corner
-    local cornerFrame = Instance.new("Frame", cornerAlertGui)
-    cornerFrame.Size = UDim2.new(0, 320, 0, 100)
-    cornerFrame.Position = UDim2.new(1, -340, 1, -120)  -- Bottom right with margin
-    cornerFrame.BackgroundColor3 = COLORS.Primary
-    cornerFrame.BackgroundTransparency = 0
-    cornerFrame.BorderSizePixel = 0
-    cornerFrame.ClipsDescendants = true
-    
-    -- Shadow for corner alert
-    local cornerShadow = Instance.new("ImageLabel", cornerFrame)
-    cornerShadow.Name = "Shadow"
-    cornerShadow.AnchorPoint = Vector2.new(0.5, 0.5)
-    cornerShadow.BackgroundTransparency = 1
-    cornerShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    cornerShadow.Size = UDim2.new(1, 20, 1, 20)
-    cornerShadow.Image = "rbxassetid://1316045217"
-    cornerShadow.ImageColor3 = Color3.new(0, 0, 0)
-    cornerShadow.ImageTransparency = 0.4
-    cornerShadow.ScaleType = Enum.ScaleType.Slice
-    cornerShadow.SliceCenter = Rect.new(10, 10, 118, 118)
-    cornerShadow.ZIndex = -1
-    cornerShadow.Parent = cornerFrame
-    
-    local cornerCorner = Instance.new("UICorner", cornerFrame)
-    cornerCorner.CornerRadius = UDim.new(0, 15)
-    
-    -- Gradient for corner alert
-    local cornerGradient = Instance.new("UIGradient", cornerFrame)
-    cornerGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, COLORS.Primary),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 20, 20))
-    })
-    cornerGradient.Rotation = 45
-    
-    -- Left accent stripe
-    local accentStripe = Instance.new("Frame", cornerFrame)
-    accentStripe.Size = UDim2.new(0, 8, 1, 0)
-    accentStripe.Position = UDim2.new(0, 0, 0, 0)
-    accentStripe.BackgroundColor3 = COLORS.Accent
-    accentStripe.BorderSizePixel = 0
-    local stripeCorner = Instance.new("UICorner", accentStripe)
-    stripeCorner.CornerRadius = UDim.new(0, 15)
-    
-    -- Alert icon
-    local alertIcon = Instance.new("TextLabel", cornerFrame)
-    alertIcon.Size = UDim2.new(0, 50, 1, 0)
-    alertIcon.Position = UDim2.new(0, 10, 0, 0)
-    alertIcon.BackgroundTransparency = 1
-    alertIcon.Text = "👋"
-    alertIcon.TextColor3 = COLORS.Accent
-    alertIcon.TextScaled = true
-    alertIcon.Font = Enum.Font.GothamBold
-    
-    -- Alert message
-    local alertMessage = Instance.new("TextLabel", cornerFrame)
-    alertMessage.Size = UDim2.new(1, -70, 1, 0)
-    alertMessage.Position = UDim2.new(0, 60, 0, 0)
-    alertMessage.BackgroundTransparency = 1
-    alertMessage.Text = "HI! IT'S DRIX\nTHANK YOU FOR USING!"
-    alertMessage.TextColor3 = COLORS.Text
-    alertMessage.TextWrapped = true
-    alertMessage.TextScaled = false
-    alertMessage.TextSize = 24
-    alertMessage.Font = Enum.Font.GothamBold
-    alertMessage.TextStrokeTransparency = 0.2
-    alertMessage.TextStrokeColor3 = COLORS.TextShadow
-    alertMessage.TextXAlignment = Enum.TextXAlignment.Left
-    
-    -- Small timer indicator (optional)
-    local timerText = Instance.new("TextLabel", cornerFrame)
-    timerText.Size = UDim2.new(0, 40, 0, 20)
-    timerText.Position = UDim2.new(1, -45, 0, 5)
-    timerText.BackgroundTransparency = 0.3
-    timerText.BackgroundColor3 = COLORS.Secondary
-    timerText.Text = "8s"
-    timerText.TextColor3 = COLORS.Accent
-    timerText.TextSize = 14
-    timerText.Font = Enum.Font.GothamBold
-    local timerCorner = Instance.new("UICorner", timerText)
-    timerCorner.CornerRadius = UDim.new(0, 10)
-    
-    -- Animate entrance (slide in from right)
-    cornerFrame.Position = UDim2.new(1, 0, 1, -120)  -- Start off screen
-    local enterTween = TweenService:Create(cornerFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Position = UDim2.new(1, -340, 1, -120)
-    })
-    enterTween:Play()
-    
-    -- Countdown for 8 seconds
-    for i = 8, 1, -1 do
-        timerText.Text = i .. "s"
-        task.wait(1)
-    end
-    
-    -- Animate exit
-    local exitTween = TweenService:Create(cornerFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-        Position = UDim2.new(1, 0, 1, -120)
-    })
-    exitTween:Play()
-    exitTween.Completed:Wait()
-    cornerAlertGui:Destroy()
-    
-    -- Wait 14 minutes (840 seconds)
-    wait(840)
-    
-    -- ==========================================
-    -- Final Kick GUI (Premium Warning)
-    -- ==========================================
-    local kickGui = Instance.new("ScreenGui", playerGui)
-    kickGui.Name = "KickMessage"
-    kickGui.ResetOnSpawn = false
-    kickGui.IgnoreGuiInset = true
-    kickGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    kickGui.DisplayOrder = 1000
-    
-    local kickFrame = Instance.new("Frame", kickGui)
-    kickFrame.Size = UDim2.new(0, 600, 0, 250)
-    kickFrame.Position = UDim2.new(0.5, -300, 0.5, -125)
-    kickFrame.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-    kickFrame.BackgroundTransparency = 0
-    kickFrame.BorderSizePixel = 0
-    
-    local kickShadow = Instance.new("ImageLabel", kickFrame)
-    kickShadow.Name = "Shadow"
-    kickShadow.AnchorPoint = Vector2.new(0.5, 0.5)
-    kickShadow.BackgroundTransparency = 1
-    kickShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    kickShadow.Size = UDim2.new(1, 30, 1, 30)
-    kickShadow.Image = "rbxassetid://1316045217"
-    kickShadow.ImageColor3 = Color3.new(0, 0, 0)
-    kickShadow.ImageTransparency = 0.4
-    kickShadow.ScaleType = Enum.ScaleType.Slice
-    kickShadow.SliceCenter = Rect.new(10, 10, 118, 118)
-    kickShadow.ZIndex = -1
-    kickShadow.Parent = kickFrame
-    
-    local kickCorner = Instance.new("UICorner", kickFrame)
-    kickCorner.CornerRadius = UDim.new(0, 20)
-    
-    local kickGradient = Instance.new("UIGradient", kickFrame)
-    kickGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 0, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 0, 0))
-    })
-    kickGradient.Rotation = 45
-    
-    local kickText = Instance.new("TextLabel", kickFrame)
-    kickText.Size = UDim2.new(1, -80, 1, -80)
-    kickText.Position = UDim2.new(0, 40, 0, 40)
-    kickText.BackgroundTransparency = 1
-    kickText.Text = "LAST STEP LEFT! SEND THIS SCRIPT TO YOUR 3 FRIENDS AND WE ARE ALSO DOING A GIVEAWAY SOON\nTIKTOK ID -> DRIX_SCRIPT_HUB"
-    kickText.TextColor3 = COLORS.Text
-    kickText.TextWrapped = true
-    kickText.TextScaled = false
-    kickText.TextSize = 30
-    kickText.Font = Enum.Font.GothamBold
-    kickText.TextStrokeTransparency = 0.2
-    kickText.TextStrokeColor3 = COLORS.TextShadow
-    kickText.TextXAlignment = Enum.TextXAlignment.Center
-    
-    wait(5)
-    
-    -- Kick player
-    player:Kick("LAST STEP LEFT! SEND THIS SCRIPT TO YOUR 3 FRIENDS AND WE ARE ALSO DOING A GIVEAWAY SOON TIKTOK ID -> DRIX_SCRIPT_HUB")
-end)
+    return success
+end
 
-print("✨ DRIX VERIFICATION SYSTEM PREMIUM LOADED ✨")
-print("🎨 Color Scheme: Royal Crimson & Obsidian Black (SOLID)")
-print("📏 Text Size: PREMIUM LARGE FORMAT")
-print("⚡ NO COOLDOWN DISPLAYS - CLEAN SERVER SCREEN")
-print("🛡️ PREMIUM PROTECTION ACTIVE:")
-print("   ❌ Private Server Blocked")
-print("   ❌ Non-Blox Fruit Game Blocked")
-print("   ❌ 1st Sea Blocked")
-print("✨ NEW: Corner Alert Popup (HI! IT'S DRIX)")
+-- Function to create gradient
+local function createGradient(parent, color1, color2, rotation)
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, color1),
+        ColorSequenceKeypoint.new(1, color2)
+    })
+    gradient.Rotation = rotation or 45
+    gradient.Parent = parent
+    return gradient
+end
+
+-- Function to create shadow
+local function createShadow(parent, size, transparency)
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.new(1, size or 20, 1, size or 20)
+    shadow.Position = UDim2.new(0, -(size or 10), 0, -(size or 10))
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxassetid://1316045217"
+    shadow.ImageColor3 = Color3.new(0, 0, 0)
+    shadow.ImageTransparency = transparency or 0.5
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+    shadow.Parent = parent
+    return shadow
+end
+
+-- Function to create glow effect
+local function createGlow(parent, color)
+    local glow = Instance.new("ImageLabel")
+    glow.Name = "Glow"
+    glow.Size = UDim2.new(1, 40, 1, 40)
+    glow.Position = UDim2.new(0, -20, 0, -20)
+    glow.BackgroundTransparency = 1
+    glow.Image = "rbxassetid://5025667418"
+    glow.ImageColor3 = color or COLORS.Accent
+    glow.ImageTransparency = 0.7
+    glow.ScaleType = Enum.ScaleType.Slice
+    glow.SliceCenter = Rect.new(20, 20, 260, 260)
+    glow.Parent = parent
+    return glow
+end
+
+-- Function to create stroke
+local function createStroke(parent, color, thickness)
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = color or COLORS.Accent
+    stroke.Thickness = thickness or 1
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = parent
+    return stroke
+end
+
+-- Validation Functions
+local function validateEnvironment()
+    -- CHECK 1: Private Server Detection
+    if game.PrivateServerId ~= "" or game.VIPServerId ~= "" then
+        local gui = Instance.new("ScreenGui")
+        gui.Parent = PlayerGui
+        gui.ResetOnSpawn = false
+        gui.DisplayOrder = 999
+        gui.IgnoreGuiInset = true
+        
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(0, 550, 0, 300)
+        frame.Position = UDim2.new(0.5, -275, 0.5, -150)
+        frame.BackgroundColor3 = COLORS.DarkRed
+        frame.BackgroundTransparency = 0
+        frame.BorderSizePixel = 0
+        frame.Parent = gui
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 20)
+        corner.Parent = frame
+        
+        createShadow(frame, 30, 0.6)
+        createGradient(frame, COLORS.DarkRed, Color3.fromRGB(100, 0, 0), 90)
+        createGlow(frame, COLORS.Accent)
+        createStroke(frame, COLORS.Accent, 2)
+        
+        local topBar = Instance.new("Frame")
+        topBar.Size = UDim2.new(1, 0, 0, 5)
+        topBar.BackgroundColor3 = COLORS.Accent
+        topBar.BorderSizePixel = 0
+        topBar.Parent = frame
+        
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, 0, 0, 80)
+        title.Position = UDim2.new(0, 0, 0, 20)
+        title.BackgroundTransparency = 1
+        title.Text = "PRIVATE SERVER DETECTED"
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = 32
+        title.TextColor3 = COLORS.Accent
+        title.TextWrapped = true
+        title.Parent = frame
+        
+        local msg = Instance.new("TextLabel")
+        msg.Size = UDim2.new(0.8, 0, 0, 120)
+        msg.Position = UDim2.new(0.1, 0, 0.4, 0)
+        msg.BackgroundTransparency = 1
+        msg.Text = "THIS SCRIPT DOES NOT WORK IN PRIVATE SERVERS!\n\nPlease join a public server to use DRIX Script Hub."
+        msg.Font = Enum.Font.GothamBold
+        msg.TextSize = 22
+        msg.TextColor3 = COLORS.Text
+        msg.TextWrapped = true
+        msg.Parent = frame
+        
+        wait(5)
+        player:Kick("PRIVATE SERVER DETECTED - THIS SCRIPT DOES NOT WORK IN PRIVATE SERVERS! Please join a public server to use DRIX Script Hub.")
+        return false
+    end
+    
+    -- CHECK 2: Blox Fruit Game Check
+    local placeId = game.PlaceId
+    if not BLOX_FRUIT_PLACES[placeId] then
+        local gui = Instance.new("ScreenGui")
+        gui.Parent = PlayerGui
+        gui.ResetOnSpawn = false
+        gui.DisplayOrder = 999
+        gui.IgnoreGuiInset = true
+        
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(0, 550, 0, 300)
+        frame.Position = UDim2.new(0.5, -275, 0.5, -150)
+        frame.BackgroundColor3 = COLORS.DarkRed
+        frame.BackgroundTransparency = 0
+        frame.BorderSizePixel = 0
+        frame.Parent = gui
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 20)
+        corner.Parent = frame
+        
+        createShadow(frame, 30, 0.6)
+        createGradient(frame, COLORS.DarkRed, Color3.fromRGB(100, 0, 0), 90)
+        createGlow(frame, COLORS.Accent)
+        createStroke(frame, COLORS.Accent, 2)
+        
+        local topBar = Instance.new("Frame")
+        topBar.Size = UDim2.new(1, 0, 0, 5)
+        topBar.BackgroundColor3 = COLORS.Accent
+        topBar.BorderSizePixel = 0
+        topBar.Parent = frame
+        
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, 0, 0, 80)
+        title.Position = UDim2.new(0, 0, 0, 20)
+        title.BackgroundTransparency = 1
+        title.Text = "UNSUPPORTED GAME"
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = 40
+        title.TextColor3 = COLORS.Accent
+        title.Parent = frame
+        
+        local msg = Instance.new("TextLabel")
+        msg.Size = UDim2.new(0.8, 0, 0, 120)
+        msg.Position = UDim2.new(0.1, 0, 0.4, 0)
+        msg.BackgroundTransparency = 1
+        msg.Text = "THIS SCRIPT IS MADE FOR BLOX FRUIT ONLY!\n\nPlease join Blox Fruit to use DRIX Script Hub."
+        msg.Font = Enum.Font.GothamBold
+        msg.TextSize = 22
+        msg.TextColor3 = COLORS.Text
+        msg.TextWrapped = true
+        msg.Parent = frame
+        
+        wait(5)
+        player:Kick("UNSUPPORTED GAME - THIS SCRIPT IS MADE FOR BLOX FRUIT ONLY!")
+        return false
+    end
+    
+    -- CHECK 3: Sea 1 Restriction
+    if placeId == 2753915549 then
+        local gui = Instance.new("ScreenGui")
+        gui.Parent = PlayerGui
+        gui.ResetOnSpawn = false
+        gui.DisplayOrder = 999
+        gui.IgnoreGuiInset = true
+        
+        local frame = Instance.new("Frame")
+        frame.Size = UDim2.new(0, 550, 0, 300)
+        frame.Position = UDim2.new(0.5, -275, 0.5, -150)
+        frame.BackgroundColor3 = COLORS.DarkRed
+        frame.BackgroundTransparency = 0
+        frame.BorderSizePixel = 0
+        frame.Parent = gui
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 20)
+        corner.Parent = frame
+        
+        createShadow(frame, 30, 0.6)
+        createGradient(frame, COLORS.DarkRed, Color3.fromRGB(100, 0, 0), 90)
+        createGlow(frame, COLORS.Accent)
+        createStroke(frame, COLORS.Accent, 2)
+        
+        local topBar = Instance.new("Frame")
+        topBar.Size = UDim2.new(1, 0, 0, 5)
+        topBar.BackgroundColor3 = COLORS.Accent
+        topBar.BorderSizePixel = 0
+        topBar.Parent = frame
+        
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, 0, 0, 80)
+        title.Position = UDim2.new(0, 0, 0, 20)
+        title.BackgroundTransparency = 1
+        title.Text = "FIRST SEA NOT SUPPORTED"
+        title.Font = Enum.Font.GothamBold
+        title.TextSize = 32
+        title.TextColor3 = COLORS.Accent
+        title.TextWrapped = true
+        title.Parent = frame
+        
+        local msg = Instance.new("TextLabel")
+        msg.Size = UDim2.new(0.8, 0, 0, 120)
+        msg.Position = UDim2.new(0.1, 0, 0.4, 0)
+        msg.BackgroundTransparency = 1
+        msg.Text = "THIS SCRIPT ONLY SUPPORTS 2ND AND 3RD SEA!\n\nPlease reach 2nd or 3rd Sea to use DRIX Script Hub."
+        msg.Font = Enum.Font.GothamBold
+        msg.TextSize = 22
+        msg.TextColor3 = COLORS.Text
+        msg.TextWrapped = true
+        msg.Parent = frame
+        
+        wait(5)
+        player:Kick("FIRST SEA NOT SUPPORTED - THIS SCRIPT ONLY SUPPORTS 2ND AND 3RD SEA!")
+        return false
+    end
+    
+    print("All validation checks passed!")
+    return true
+end
+
+-- Key System GUI (DECORATIVE EDITION)
+local function createKeyGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = PlayerGui
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.DisplayOrder = 999
+    gui.Name = "DrixKeySystem"
+    gui.IgnoreGuiInset = true
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 500, 0, 380)
+    frame.Position = UDim2.new(0.5, -250, 0.5, -190)
+    frame.BackgroundColor3 = COLORS.Secondary
+    frame.BackgroundTransparency = 0
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.ClipsDescendants = false
+    frame.Parent = gui
+    
+    -- Main corner radius
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 20)
+    corner.Parent = frame
+    
+    -- Shadow
+    createShadow(frame, 30, 0.6)
+    
+    -- Gradient background
+    createGradient(frame, COLORS.Secondary, COLORS.SecondaryLight, 45)
+    
+    -- Gold stroke
+    createStroke(frame, COLORS.Accent, 2)
+    
+    -- Decorative top bar
+    local topBar = Instance.new("Frame")
+    topBar.Size = UDim2.new(1, 0, 0, 8)
+    topBar.BackgroundColor3 = COLORS.Primary
+    topBar.BorderSizePixel = 0
+    topBar.Parent = frame
+    
+    local topBarCorner = Instance.new("UICorner")
+    topBarCorner.CornerRadius = UDim.new(0, 20)
+    topBarCorner.Parent = topBar
+    
+    -- Glow effect
+    createGlow(frame, COLORS.Primary)
+    
+    -- Decorative corner accents
+    local cornerAccent1 = Instance.new("Frame")
+    cornerAccent1.Size = UDim2.new(0, 50, 0, 50)
+    cornerAccent1.Position = UDim2.new(0, -10, 0, -10)
+    cornerAccent1.BackgroundColor3 = COLORS.Accent
+    cornerAccent1.BackgroundTransparency = 0.5
+    cornerAccent1.BorderSizePixel = 0
+    cornerAccent1.Rotation = 45
+    cornerAccent1.Parent = frame
+    cornerAccent1.ZIndex = 0
+    
+    local cornerAccent2 = Instance.new("Frame")
+    cornerAccent2.Size = UDim2.new(0, 50, 0, 50)
+    cornerAccent2.Position = UDim2.new(1, -40, 1, -40)
+    cornerAccent2.BackgroundColor3 = COLORS.Accent
+    cornerAccent2.BackgroundTransparency = 0.5
+    cornerAccent2.BorderSizePixel = 0
+    cornerAccent2.Rotation = 45
+    cornerAccent2.Parent = frame
+    cornerAccent2.ZIndex = 0
+    
+    -- Title
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 60)
+    title.Position = UDim2.new(0, 0, 0, 15)
+    title.BackgroundTransparency = 1
+    title.Text = "DRIX KEY SYSTEM"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 32
+    title.TextColor3 = COLORS.Primary
+    title.TextStrokeTransparency = 0.5
+    title.TextStrokeColor3 = COLORS.Accent
+    title.Parent = frame
+    
+    -- Subtitle
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Size = UDim2.new(1, 0, 0, 30)
+    subtitle.Position = UDim2.new(0, 0, 0.18, 0)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Text = "ENTER YOUR PREMIUM KEY"
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.TextSize = 16
+    subtitle.TextColor3 = COLORS.TextMuted
+    subtitle.Parent = frame
+    
+    -- Key Box Container
+    local keyBoxContainer = Instance.new("Frame")
+    keyBoxContainer.Size = UDim2.new(0.8, 0, 0, 55)
+    keyBoxContainer.Position = UDim2.new(0.1, 0, 0.28, 0)
+    keyBoxContainer.BackgroundColor3 = COLORS.SecondaryLight
+    keyBoxContainer.BackgroundTransparency = 0
+    keyBoxContainer.BorderSizePixel = 0
+    keyBoxContainer.Parent = frame
+    
+    local containerCorner = Instance.new("UICorner")
+    containerCorner.CornerRadius = UDim.new(0, 10)
+    containerCorner.Parent = keyBoxContainer
+    
+    createStroke(keyBoxContainer, COLORS.Accent, 1)
+    
+    -- Key Box - FIXED: ClearTextOnFocus = true to erase placeholder when clicked
+    local keyBox = Instance.new("TextBox")
+    keyBox.Size = UDim2.new(1, -20, 1, 0)
+    keyBox.Position = UDim2.new(0, 10, 0, 0)
+    keyBox.BackgroundTransparency = 1
+    keyBox.TextColor3 = COLORS.Text
+    keyBox.PlaceholderText = "ENTER YOUR KEY"
+    keyBox.PlaceholderColor3 = COLORS.TextMuted
+    keyBox.ClearTextOnFocus = true  -- THIS FIXES THE ISSUE
+    keyBox.Font = Enum.Font.GothamBold
+    keyBox.TextSize = 22
+    keyBox.Parent = keyBoxContainer
+    
+    -- Submit Button
+    local submit = Instance.new("TextButton")
+    submit.Size = UDim2.new(0.6, 0, 0, 55)
+    submit.Position = UDim2.new(0.2, 0, 0.45, 0)
+    submit.BackgroundColor3 = COLORS.Primary
+    submit.BackgroundTransparency = 0
+    submit.Text = "SUBMIT KEY"
+    submit.Font = Enum.Font.GothamBold
+    submit.TextSize = 22
+    submit.TextColor3 = COLORS.Text
+    submit.Parent = frame
+    
+    local submitCorner = Instance.new("UICorner")
+    submitCorner.CornerRadius = UDim.new(0, 30)
+    submitCorner.Parent = submit
+    
+    createGradient(submit, COLORS.Primary, COLORS.PrimaryDark, 90)
+    createStroke(submit, COLORS.Accent, 2)
+    
+    -- Get Key Button
+    local getKey = Instance.new("TextButton")
+    getKey.Size = UDim2.new(0.4, 0, 0, 45)
+    getKey.Position = UDim2.new(0.3, 0, 0.6, 0)
+    getKey.BackgroundColor3 = COLORS.SecondaryLight
+    getKey.BackgroundTransparency = 0
+    getKey.Text = "GET KEY"
+    getKey.Font = Enum.Font.GothamBold
+    getKey.TextSize = 18
+    getKey.TextColor3 = COLORS.Accent
+    getKey.Parent = frame
+    
+    local getKeyCorner = Instance.new("UICorner")
+    getKeyCorner.CornerRadius = UDim.new(0, 25)
+    getKeyCorner.Parent = getKey
+    
+    createStroke(getKey, COLORS.Accent, 1)
+    
+    -- Link Container with Copy Button
+    local linkContainer = Instance.new("Frame")
+    linkContainer.Size = UDim2.new(0.9, 0, 0, 50)
+    linkContainer.Position = UDim2.new(0.05, 0, 0.73, 0)
+    linkContainer.BackgroundColor3 = COLORS.SecondaryLight
+    linkContainer.BackgroundTransparency = 0
+    linkContainer.BorderSizePixel = 0
+    linkContainer.Visible = false
+    linkContainer.Parent = frame
+    
+    local linkCorner = Instance.new("UICorner")
+    linkCorner.CornerRadius = UDim.new(0, 10)
+    linkCorner.Parent = linkContainer
+    
+    createStroke(linkContainer, COLORS.Accent, 2)
+    
+    local linkBox = Instance.new("TextBox")
+    linkBox.Size = UDim2.new(0.7, -5, 1, 0)
+    linkBox.Position = UDim2.new(0, 5, 0, 0)
+    linkBox.BackgroundTransparency = 1
+    linkBox.TextColor3 = COLORS.Accent
+    linkBox.Text = KEY_LINK
+    linkBox.ClearTextOnFocus = false
+    linkBox.Font = Enum.Font.Code
+    linkBox.TextSize = 14
+    linkBox.TextEditable = false
+    linkBox.Parent = linkContainer
+    
+    local copyButton = Instance.new("TextButton")
+    copyButton.Size = UDim2.new(0.3, -10, 1, -10)
+    copyButton.Position = UDim2.new(0.7, 0, 0.5, -15)
+    copyButton.BackgroundColor3 = COLORS.Accent
+    copyButton.Text = "COPY"
+    copyButton.Font = Enum.Font.GothamBold
+    copyButton.TextSize = 16
+    copyButton.TextColor3 = COLORS.Secondary
+    copyButton.Parent = linkContainer
+    
+    local copyCorner = Instance.new("UICorner")
+    copyCorner.CornerRadius = UDim.new(0, 8)
+    copyCorner.Parent = copyButton
+    
+    -- Copy button functionality
+    copyButton.MouseButton1Click:Connect(function()
+        local success = copyToClipboard(KEY_LINK)
+        if success then
+            copyButton.Text = "COPIED!"
+            copyButton.BackgroundColor3 = COLORS.Success
+            wait(1)
+            copyButton.Text = "COPY"
+            copyButton.BackgroundColor3 = COLORS.Accent
+        else
+            copyButton.Text = "FAILED"
+            copyButton.BackgroundColor3 = COLORS.Warning
+            wait(1)
+            copyButton.Text = "COPY"
+            copyButton.BackgroundColor3 = COLORS.Accent
+        end
+    end)
+    
+    -- Status Label
+    local status = Instance.new("TextLabel")
+    status.Size = UDim2.new(1, 0, 0, 35)
+    status.Position = UDim2.new(0, 0, 0.9, 0)
+    status.BackgroundTransparency = 1
+    status.TextColor3 = COLORS.Warning
+    status.Font = Enum.Font.GothamBold
+    status.TextSize = 18
+    status.Text = ""
+    status.TextStrokeTransparency = 0.5
+    status.TextStrokeColor3 = COLORS.Text
+    status.Parent = frame
+    
+    return gui, keyBox, submit, getKey, linkContainer, status
+end
+
+-- GUI 1: Main Verification
+local function createMainVerificationGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = PlayerGui
+    gui.ResetOnSpawn = false
+    gui.DisplayOrder = 999
+    gui.Name = "DrixMainVerification"
+    gui.IgnoreGuiInset = true
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 650, 0, 400)
+    frame.Position = UDim2.new(0.5, -325, 0.5, -200)
+    frame.BackgroundColor3 = COLORS.Primary
+    frame.BackgroundTransparency = 0
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 25)
+    corner.Parent = frame
+    
+    createShadow(frame, 30, 0.6)
+    createGradient(frame, COLORS.Primary, COLORS.PrimaryDark, 45)
+    createGlow(frame, COLORS.Accent)
+    createStroke(frame, COLORS.Accent, 3)
+    
+    -- Decorative top pattern
+    for i = 0, 5 do
+        local dot = Instance.new("Frame")
+        dot.Size = UDim2.new(0, 8, 0, 8)
+        dot.Position = UDim2.new(0, 20 + (i * 30), 0, 10)
+        dot.BackgroundColor3 = COLORS.Accent
+        dot.BackgroundTransparency = 0.3
+        dot.BorderSizePixel = 0
+        dot.Parent = frame
+        
+        local dotCorner = Instance.new("UICorner")
+        dotCorner.CornerRadius = UDim.new(1, 0)
+        dotCorner.Parent = dot
+    end
+    
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 90)
+    title.Position = UDim2.new(0, 0, 0, 20)
+    title.BackgroundTransparency = 1
+    title.Text = "DRIX VERIFICATION"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 48
+    title.TextColor3 = COLORS.Text
+    title.TextStrokeTransparency = 0.3
+    title.TextStrokeColor3 = COLORS.Accent
+    title.Parent = frame
+    
+    local bodyText = Instance.new("TextLabel")
+    bodyText.Size = UDim2.new(0.8, 0, 0, 120)
+    bodyText.Position = UDim2.new(0.1, 0, 0.28, 0)
+    bodyText.BackgroundTransparency = 1
+    bodyText.Text = "We need to bypass the current server and account restrictions to ensure the script operates at its full potential."
+    bodyText.Font = Enum.Font.GothamBold
+    bodyText.TextSize = 22
+    bodyText.TextColor3 = COLORS.Text
+    bodyText.TextWrapped = true
+    bodyText.Parent = frame
+    
+    -- Gold decorative line
+    local lineContainer = Instance.new("Frame")
+    lineContainer.Size = UDim2.new(0.8, 0, 0, 2)
+    lineContainer.Position = UDim2.new(0.1, 0, 0.6, 0)
+    lineContainer.BackgroundTransparency = 1
+    lineContainer.Parent = frame
+    
+    local line1 = Instance.new("Frame")
+    line1.Size = UDim2.new(0.4, -5, 1, 0)
+    line1.Position = UDim2.new(0, 0, 0, 0)
+    line1.BackgroundColor3 = COLORS.Accent
+    line1.BorderSizePixel = 0
+    line1.Parent = lineContainer
+    
+    local line2 = Instance.new("Frame")
+    line2.Size = UDim2.new(0.4, -5, 1, 0)
+    line2.Position = UDim2.new(0.6, 5, 0, 0)
+    line2.BackgroundColor3 = COLORS.Accent
+    line2.BorderSizePixel = 0
+    line2.Parent = lineContainer
+    
+    local centerGlow = Instance.new("ImageLabel")
+    centerGlow.Size = UDim2.new(0, 60, 0, 60)
+    centerGlow.Position = UDim2.new(0.5, -30, 0.55, -30)
+    centerGlow.BackgroundTransparency = 1
+    centerGlow.Image = "rbxassetid://5025667418"
+    centerGlow.ImageColor3 = COLORS.Accent
+    centerGlow.ImageTransparency = 0.5
+    centerGlow.Parent = frame
+    
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 320, 0, 80)
+    button.Position = UDim2.new(0.5, -160, 0.7, 0)
+    button.BackgroundColor3 = COLORS.Accent
+    button.Text = "OK! BYPASS THE SERVER"
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 24
+    button.TextColor3 = COLORS.Secondary
+    button.Parent = frame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 40)
+    buttonCorner.Parent = button
+    
+    createGradient(button, COLORS.Accent, COLORS.AccentLight, 90)
+    createGlow(button, COLORS.Accent)
+    
+    -- Hover effect
+    button.MouseEnter:Connect(function()
+        button:TweenSize(UDim2.new(0, 340, 0, 85), "Out", "Quad", 0.3)
+    end)
+    
+    button.MouseLeave:Connect(function()
+        button:TweenSize(UDim2.new(0, 320, 0, 80), "Out", "Quad", 0.3)
+    end)
+    
+    return gui, button
+end
+
+-- GUI 2: Remember Screen
+local function createRememberGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = PlayerGui
+    gui.ResetOnSpawn = false
+    gui.DisplayOrder = 999
+    gui.Name = "DrixRememberScreen"
+    gui.IgnoreGuiInset = true
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 650, 0, 450)
+    frame.Position = UDim2.new(0.5, -325, 0.5, -225)
+    frame.BackgroundColor3 = COLORS.Secondary
+    frame.BackgroundTransparency = 0
+    frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 25)
+    corner.Parent = frame
+    
+    createShadow(frame, 30, 0.6)
+    createGradient(frame, COLORS.Secondary, COLORS.SecondaryLight, 45)
+    createGlow(frame, COLORS.Primary)
+    createStroke(frame, COLORS.Primary, 3)
+    
+    -- Decorative elements
+    for i = 0, 7 do
+        local line = Instance.new("Frame")
+        line.Size = UDim2.new(0, 2, 0, 20)
+        line.Position = UDim2.new(0, 50 + (i * 70), 0, 15)
+        line.BackgroundColor3 = COLORS.Primary
+        line.BackgroundTransparency = 0.3
+        line.BorderSizePixel = 0
+        line.Rotation = 45
+        line.Parent = frame
+    end
+    
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 80)
+    title.Position = UDim2.new(0, 0, 0, 20)
+    title.BackgroundTransparency = 1
+    title.Text = "THINGS TO REMEMBER!"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 44
+    title.TextColor3 = COLORS.Accent
+    title.TextStrokeTransparency = 0.3
+    title.TextStrokeColor3 = COLORS.Primary
+    title.Parent = frame
+    
+    local bodyText = Instance.new("TextLabel")
+    bodyText.Size = UDim2.new(0.8, 0, 0, 100)
+    bodyText.Position = UDim2.new(0.1, 0, 0.23, 0)
+    bodyText.BackgroundTransparency = 1
+    bodyText.Text = "A loading interface will be displayed. Please remain patient.\nEstimated time: 10–15 SECONDS"
+    bodyText.Font = Enum.Font.GothamBold
+    bodyText.TextSize = 26
+    bodyText.TextColor3 = COLORS.Text
+    bodyText.TextWrapped = true
+    bodyText.Parent = frame
+    
+    -- Spinner container
+    local spinnerContainer = Instance.new("Frame")
+    spinnerContainer.Size = UDim2.new(0, 100, 0, 100)
+    spinnerContainer.Position = UDim2.new(0.5, -50, 0.45, 0)
+    spinnerContainer.BackgroundTransparency = 1
+    spinnerContainer.Parent = frame
+    
+    -- Spinner
+    local spinner = Instance.new("ImageLabel")
+    spinner.Size = UDim2.new(1, 0, 1, 0)
+    spinner.BackgroundTransparency = 1
+    spinner.Image = "rbxassetid://6031068359"
+    spinner.ImageColor3 = COLORS.Accent
+    spinner.Parent = spinnerContainer
+    
+    -- Spinner animation
+    local spin = 0
+    local spinConnection
+    spinConnection = RunService.RenderStepped:Connect(function()
+        if spinner and spinner.Parent then
+            spin = spin + 5
+            spinner.Rotation = spin
+        else
+            spinConnection:Disconnect()
+        end
+    end)
+    
+    -- Status text
+    local statusText = Instance.new("TextLabel")
+    statusText.Size = UDim2.new(0.9, 0, 0, 50)
+    statusText.Position = UDim2.new(0.05, 0, 0.7, 0)
+    statusText.BackgroundTransparency = 1
+    statusText.Text = "LOADING SCRIPT... (15s)"
+    statusText.Font = Enum.Font.GothamBold
+    statusText.TextSize = 28
+    statusText.TextColor3 = COLORS.Text
+    statusText.TextStrokeTransparency = 0.5
+    statusText.TextStrokeColor3 = COLORS.Primary
+    statusText.Parent = frame
+    
+    -- Progress bar
+    local progressBar = Instance.new("Frame")
+    progressBar.Size = UDim2.new(0.8, 0, 0, 10)
+    progressBar.Position = UDim2.new(0.1, 0, 0.83, 0)
+    progressBar.BackgroundColor3 = COLORS.SecondaryLight
+    progressBar.BorderSizePixel = 0
+    progressBar.Parent = frame
+    
+    local progressBarCorner = Instance.new("UICorner")
+    progressBarCorner.CornerRadius = UDim.new(0, 5)
+    progressBarCorner.Parent = progressBar
+    
+    local progress = Instance.new("Frame")
+    progress.Size = UDim2.new(0, 0, 1, 0)
+    progress.BackgroundColor3 = COLORS.Accent
+    progress.BorderSizePixel = 0
+    progress.Parent = progressBar
+    
+    local progressCorner = Instance.new("UICorner")
+    progressCorner.CornerRadius = UDim.new(0, 5)
+    progressCorner.Parent = progress
+    
+    return gui, statusText, spinner, progress
+end
+
+-- Corner Alert
+local function createCornerAlert()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = PlayerGui
+    gui.ResetOnSpawn = false
+    gui.DisplayOrder = 999
+    gui.Name = "DrixCornerAlert"
+    gui.IgnoreGuiInset = true
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 380, 0, 120)
+    frame.Position = UDim2.new(1, -400, 1, -140)
+    frame.BackgroundColor3 = COLORS.Primary
+    frame.BackgroundTransparency = 0
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 15)
+    corner.Parent = frame
+    
+    createShadow(frame, 20, 0.5)
+    createGradient(frame, COLORS.Primary, COLORS.PrimaryDark, 90)
+    createStroke(frame, COLORS.Accent, 2)
+    
+    -- Gold stripe
+    local stripe = Instance.new("Frame")
+    stripe.Size = UDim2.new(0, 8, 1, 0)
+    stripe.BackgroundColor3 = COLORS.Accent
+    stripe.BorderSizePixel = 0
+    stripe.Parent = frame
+    
+    local icon = Instance.new("TextLabel")
+    icon.Size = UDim2.new(0, 60, 1, 0)
+    icon.Position = UDim2.new(0, 20, 0, 0)
+    icon.BackgroundTransparency = 1
+    icon.Text = "👋"
+    icon.Font = Enum.Font.Gotham
+    icon.TextSize = 50
+    icon.TextColor3 = COLORS.Text
+    icon.Parent = frame
+    
+    local message = Instance.new("TextLabel")
+    message.Size = UDim2.new(0, 220, 1, 0)
+    message.Position = UDim2.new(0, 90, 0, 0)
+    message.BackgroundTransparency = 1
+    message.Text = "HI! IT'S DRIX\nTHANK YOU FOR USING!"
+    message.Font = Enum.Font.GothamBold
+    message.TextSize = 26
+    message.TextColor3 = COLORS.Text
+    message.TextXAlignment = Enum.TextXAlignment.Left
+    message.TextWrapped = true
+    message.Parent = frame
+    
+    local timer = Instance.new("TextLabel")
+    timer.Size = UDim2.new(0, 60, 0, 40)
+    timer.Position = UDim2.new(1, -70, 0.5, -20)
+    timer.BackgroundTransparency = 1
+    timer.Text = "8s"
+    timer.Font = Enum.Font.GothamBold
+    timer.TextSize = 30
+    timer.TextColor3 = COLORS.Accent
+    timer.TextStrokeTransparency = 0.3
+    timer.TextStrokeColor3 = COLORS.Text
+    timer.Parent = frame
+    
+    -- Entrance animation
+    frame.Position = UDim2.new(1, 0, 1, -140)
+    frame:TweenPosition(UDim2.new(1, -400, 1, -140), "Out", "Quad", 0.5, true)
+    
+    -- Countdown
+    coroutine.wrap(function()
+        for i = 8, 1, -1 do
+            timer.Text = i .. "s"
+            wait(1)
+        end
+        -- Exit animation
+        frame:TweenPosition(UDim2.new(1, 0, 1, -140), "Out", "Quad", 0.5, true)
+        wait(0.5)
+        gui:Destroy()
+    end)()
+end
+
+-- Final Kick GUI
+local function createFinalKickGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Parent = PlayerGui
+    gui.ResetOnSpawn = false
+    gui.DisplayOrder = 999
+    gui.Name = "DrixFinalKick"
+    gui.IgnoreGuiInset = true
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 700, 0, 300)
+    frame.Position = UDim2.new(0.5, -350, 0.5, -150)
+    frame.BackgroundColor3 = COLORS.DarkRed
+    frame.BackgroundTransparency = 0
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 30)
+    corner.Parent = frame
+    
+    createShadow(frame, 40, 0.7)
+    createGradient(frame, COLORS.DarkRed, Color3.fromRGB(100, 0, 0), 90)
+    createGlow(frame, COLORS.Accent)
+    createStroke(frame, COLORS.Accent, 4)
+    
+    -- Decorative elements
+    for i = 1, 10 do
+        local particle = Instance.new("Frame")
+        particle.Size = UDim2.new(0, math.random(5, 15), 0, math.random(5, 15))
+        particle.Position = UDim2.new(0, math.random(50, 600), 0, math.random(50, 250))
+        particle.BackgroundColor3 = COLORS.Accent
+        particle.BackgroundTransparency = math.random(3, 7) / 10
+        particle.BorderSizePixel = 0
+        particle.Parent = frame
+        
+        local particleCorner = Instance.new("UICorner")
+        particleCorner.CornerRadius = UDim.new(1, 0)
+        particleCorner.Parent = particle
+    end
+    
+    local message = Instance.new("TextLabel")
+    message.Size = UDim2.new(0.9, 0, 0.8, 0)
+    message.Position = UDim2.new(0.05, 0, 0.1, 0)
+    message.BackgroundTransparency = 1
+    message.Text = "LAST STEP LEFT! SEND THIS SCRIPT TO YOUR 3 FRIENDS AND WE ARE ALSO DOING A GIVEAWAY SOON\n\nTIKTOK ID -> DRIX_SCRIPT_HUB"
+    message.Font = Enum.Font.GothamBold
+    message.TextSize = 34
+    message.TextColor3 = COLORS.Text
+    message.TextWrapped = true
+    message.TextStrokeTransparency = 0.3
+    message.TextStrokeColor3 = COLORS.Accent
+    message.Parent = frame
+    
+    return gui
+end
+
+-- Main execution
+local function startMainFlow()
+    -- GUI 1
+    local gui1, button1 = createMainVerificationGUI()
+    
+    button1.MouseButton1Click:Connect(function()
+        gui1:Destroy()
+        wait(0.1)
+        
+        -- GUI 2
+        local gui2, statusText, spinner, progressBar = createRememberGUI()
+        
+        -- Status updates with progress bar animation
+        wait(1)
+        statusText.Text = "LOADING SCRIPT... (15s)"
+        progressBar:TweenSize(UDim2.new(0.25, 0, 1, 0), "Out", "Linear", 5)
+        wait(5)
+        
+        statusText.Text = "BYPASSING SERVER..."
+        progressBar:TweenSize(UDim2.new(0.5, 0, 1, 0), "Out", "Linear", 5)
+        wait(5)
+        
+        statusText.Text = "FINALIZING..."
+        progressBar:TweenSize(UDim2.new(0.75, 0, 1, 0), "Out", "Linear", 5)
+        wait(5)
+        
+        statusText.Text = "EXECUTING SCRIPT..."
+        progressBar:TweenSize(UDim2.new(1, 0, 1, 0), "Out", "Linear", 1)
+        
+        -- Load the script
+        local success, result = pcall(function()
+            local content = game:HttpGet(SCRIPT_URL)
+            loadstring(content)()
+        end)
+        
+        if success then
+            statusText.Text = "SCRIPT LOADED SUCCESSFULLY!"
+            statusText.TextColor3 = COLORS.Success
+        else
+            statusText.Text = "SCRIPT LOADING FAILED!"
+            statusText.TextColor3 = COLORS.Warning
+        end
+        
+        wait(2)
+        gui2:Destroy()
+        
+        -- Corner Alert
+        createCornerAlert()
+        
+        -- Wait 14 minutes
+        wait(840)
+        
+        -- Final Kick
+        local kickGui = createFinalKickGUI()
+        wait(5)
+        kickGui:Destroy()
+        
+        -- Kick player
+        player:Kick("LAST STEP LEFT! SEND THIS SCRIPT TO YOUR 3 FRIENDS AND WE ARE ALSO DOING A GIVEAWAY SOON\nTIKTOK ID -> DRIX_SCRIPT_HUB")
+    end)
+end
+
+-- Start everything
+local function init()
+    -- Run validation first
+    if not validateEnvironment() then return end
+    
+    -- Create key system
+    local keyGui, keyBox, submitBtn, getKeyBtn, linkContainer, statusLabel = createKeyGUI()
+    
+    -- Key check function
+    local function checkKey()
+        if keyBox.Text == CORRECT_KEY then
+            statusLabel.Text = "KEY ACCEPTED! REDIRECTING..."
+            statusLabel.TextColor3 = COLORS.Success
+            wait(1)
+            keyGui:Destroy()
+            startMainFlow()
+        else
+            statusLabel.Text = "INVALID KEY! TRY AGAIN"
+            statusLabel.TextColor3 = COLORS.Warning
+        end
+    end
+    
+    submitBtn.MouseButton1Click:Connect(checkKey)
+    
+    keyBox.FocusLost:Connect(function(enter)
+        if enter then
+            checkKey()
+        end
+    end)
+    
+    getKeyBtn.MouseButton1Click:Connect(function()
+        linkContainer.Visible = not linkContainer.Visible
+        if linkContainer.Visible then
+            getKeyBtn.Text = "HIDE LINK"
+            getKeyBtn.BackgroundColor3 = COLORS.Primary
+        else
+            getKeyBtn.Text = "GET KEY"
+            getKeyBtn.BackgroundColor3 = COLORS.SecondaryLight
+        end
+    end)
+end
+
+-- Run the script
+init()
