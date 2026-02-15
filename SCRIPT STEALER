@@ -13,8 +13,8 @@ local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
 -- Configuration
-local CORRECT_KEY = "DRIX123"
-local KEY_LINK = "KEY IS DRIX123"
+local CORRECT_KEY = "DRIX_THE_GOAT"
+local KEY_LINK = "https://tpi.li/AuWyF"
 local SCRIPT_URL = "https://pastefy.app/X1HkBT8B/raw"
 
 -- Detect if user is on mobile
