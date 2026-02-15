@@ -14,7 +14,7 @@ local PlayerGui = player:WaitForChild("PlayerGui")
 
 -- Configuration
 local CORRECT_KEY = "DRIX_KEY123"
-local KEY_LINK = "https://beacons.ai/roblox_tools"
+local KEY_LINK = "DRIX_KEY123"
 local SCRIPT_URL = "https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"
 
 -- Premium Color Scheme
