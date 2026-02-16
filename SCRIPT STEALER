@@ -8,7 +8,7 @@
 local CORRECT_KEY = "Drix_67"           -- The correct key to enter
 local KEY_LINK = "https://tpi.li/v6uBmcrEvl"  -- Replace with your actual key link
 local SCRIPT_URL = "https://pastefy.app/X1HkBT8B/raw"  -- WORKING URL
-local LOADING_GUI = "OFF"                 -- Set to "ON" to show key system, "OFF" to skip
+local LOADING_GUI = "ON"                 -- Set to "ON" to show key system, "OFF" to skip
 -- =========================================
 
 local Players = game:GetService("Players")
