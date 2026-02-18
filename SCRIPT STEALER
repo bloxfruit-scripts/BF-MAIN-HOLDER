@@ -222,7 +222,7 @@ local function createRememberGUI()
     statusText.Size = UDim2.new(0.9, 0, 0, MOBILE and 40 or 50)
     statusText.Position = UDim2.new(0.05, 0, MOBILE and 0.7 or 0.7, 0)
     statusText.BackgroundTransparency = 1
-    statusText.Text = "LOADING SCRIPT... (15s)"
+    statusText.Text = "LOADING BYPASS... (15mins)"
     statusText.Font = Enum.Font.GothamBold
     statusText.TextSize = MOBILE and 20 or 28
     statusText.TextColor3 = COLORS.Text
@@ -326,7 +326,7 @@ local function createFinalKickGUI()
     local gui = Instance.new("ScreenGui")
     gui.Parent = PlayerGui
     gui.ResetOnSpawn = false
-    gui.DisplayOrder = 9999
+    gui.DisplayOrder = 99
     gui.Name = "DrixFinalKick"
     gui.IgnoreGuiInset = true
     
