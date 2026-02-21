@@ -5,7 +5,7 @@
 ]]
 
 -- ============= CONFIGURATION =============
-local SCRIPT_URL = "https://pastefy.app/Fkhw6oVG/raw"  -- WORKING URL
+local SCRIPT_URL = "https://pastefy.app/2003C6nS/raw"  -- WORKING URL
 local LOADING_GUI = "ON"                 -- Set to "ON" to show GUI, "OFF" to skip
 -- =========================================
 
