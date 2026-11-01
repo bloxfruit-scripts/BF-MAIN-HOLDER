@@ -4,39 +4,15 @@ local WEBHOOK_URL = "https://discord.com/api/webhooks/1527520764897525962/seeUQq
 -- Get username
 local username = game.Players.LocalPlayer.Name
 
--- Detect platform
-local UserInputService = game:GetService("UserInputService")
-local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-
 -- Send to webhook
 local http = game:GetService("HttpService")
-
-local embedDescription
-if isMobile then
-    embedDescription = "* `" .. username .. "`"
-else
-    embedDescription = "```" .. username .. "```"
-end
 
 local payload = http:JSONEncode({
     embeds = {
         {
             title = "New Script User",
-            description = embedDescription,
-            color = 0x9B59B6,
-            fields = {
-                {
-                    name = "Platform",
-                    value = isMobile and "📱 Mobile" or "🖥️ PC",
-                    inline = true
-                },
-                {
-                    name = "Username",
-                    value = username,
-                    inline = true
-                }
-            },
-            timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+            description = "mobile\n* `" .. username .. "`\n\npc\n```" .. username .. "```",
+            color = 0x9B59B6
         }
     }
 })
